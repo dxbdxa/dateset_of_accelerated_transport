@@ -1,0 +1,35 @@
+
+
+# ----------------- Init Section -----------------
+
+include "monomer1.in.init"
+
+
+# ----------------- Atom Definition Section -----------------
+
+read_data "monomer1.data"
+
+# ----------------- Settings Section -----------------
+
+include "monomer1.in.settings"
+pair_coeff * * 25 3.0
+
+# ----------------- Run Section -----------------
+
+group all_atoms type 1 2 3 4 
+variable add_num equal "floor((-xlo+xhi)*(-ylo+yhi)*(-zlo+zhi)*3-count(all_atoms))"
+timestep 0.0001
+region outcylinder cylinder z 0 0 5 -6 6 side out
+create_atoms 5 random ${add_num} 134567 outcylinder
+comm_modify vel yes
+comm_modify mode multi cutoff/multi 4 6.0
+group polymer type 1 2 3
+group np type 4
+group water type 5 
+group polymer_np type 1 2 3 4
+velocity water create 1.0 4928459
+fix Myrigid np rigid molecule
+fix 2 water nvt temp 1.0 1.0 100
+run 1
+write_data polymer.data
+
